@@ -29,13 +29,15 @@ class WitResponse
     private $text;
     private $minConfidence = 0.5;
     private $durations;
-    private $future = '2 weeks';
-    private $length = '30 minutes';
+    private $future = null;
+    private $length = null;
+    private $wit;
 
     public function __construct(Array $wit)
     {
-        Log::debug(print_r($wit, true));
+        $this->wit = $wit;
         $this->text = $wit['_text'];
+        Log::debug($this->text);
         $entities = $wit['outcomes'][0]['entities'];
         $this->confidence = $wit['outcomes'][0]['confidence'];
 
@@ -43,11 +45,13 @@ class WitResponse
             throw new ConfidenceTooLowException(sprintf('Confidence is to low, is: %s. Should be larger then %s', $this->confidence, $this->minConfidence));
         }
 
-        foreach ($wit['outcomes'][0]['entities']['email'] as $email) {
-            $this->emails[] = $email['value'];
+        if (isset($entities['email'])) {
+            foreach ($entities['email'] as $email) {
+                $this->emails[] = $email['value'];
+            }
         }
 
-        if (isset($entities['agenda_entry'])){
+        if (isset($entities['agenda_entry'])) {
             $this->agenda = $entities['agenda_entry'][0]['value'];
         }
 
@@ -55,12 +59,12 @@ class WitResponse
             $this->datetime = $entities['datetime'][0]['grain'];
         }
 
-        if (isset($entities['duration'])){
-            foreach ($entities['duration'] as $duration){
+        if (isset($entities['duration'])) {
+            foreach ($entities['duration'] as $duration) {
                 $str = $duration['value'] . ' ' . $duration['unit'];
-                if (strtotime($str) > strtotime('+1 day')){
+                if (strtotime($str) > strtotime('+1 day')) {
                     $this->future = $str;
-                } else{
+                } else {
                     $this->length = $str;
                 }
             }
@@ -68,7 +72,7 @@ class WitResponse
 
         if (isset($entities['contact'])) {
             foreach ($entities['contact'] as $contact) {
-                $this->contacts = $contact['value'];
+                $this->contacts[] = $contact['value'];
             }
         }
     }
@@ -76,11 +80,13 @@ class WitResponse
     public function __toArray()
     {
         return [
-            'emails'    => $this->emails,
-            //'contacts'  => $this->contacts,
-            'agenda'    => $this->agenda,
-            'length'    => $this->length,
-            'future'    => $this->future
+            //'emails'    => $this->emails,
+            'contacts'   => $this->contacts,
+            'agenda'     => $this->agenda,
+            'length'     => $this->length,
+            'future'     => $this->future,
+            'confidence' => $this->confidence,
+            'raw'        => $this->wit
         ];
     }
 
@@ -153,6 +159,9 @@ class WitResponse
      */
     public function getFuture()
     {
+        if ($this->future === null){
+            return '2 weeks';
+        }
         return $this->future;
     }
 
@@ -161,9 +170,11 @@ class WitResponse
      */
     public function getLength()
     {
+        if ($this->length === null){
+            return '1 hour';
+        }
         return $this->length;
     }
-
 
 
 }
