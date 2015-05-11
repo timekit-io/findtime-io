@@ -2,10 +2,8 @@
 
 namespace App\Findtime;
 
-use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
-use Illuminate\Support\Facades\Log;
 
 class TimekitApi
 {
@@ -13,7 +11,7 @@ class TimekitApi
     public function __construct()
     {
         $this->client = new Client([
-            'base_url' => 'http://localhost/v2/',
+            'base_url' => env('TIMEKIT_URL'),
             'defaults' => [
                 'headers' => ['Timekit-App' => 'findtime'],
                 'auth'    => ['timebirdcph@gmail.com', 'password']
