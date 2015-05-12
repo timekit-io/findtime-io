@@ -4,6 +4,7 @@ namespace App\Findtime;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use Illuminate\Support\Facades\Log;
 
 class TimekitApi
 {
@@ -14,7 +15,7 @@ class TimekitApi
             'base_url' => env('TIMEKIT_URL'),
             'defaults' => [
                 'headers' => ['Timekit-App' => 'findtime'],
-                'auth'    => ['timebirdcph@gmail.com', 'password']
+                'auth'    => [env('TIMEKIT_USER'), env('TIMEKIT_PWD')]
             ]
         ]);
     }
@@ -34,13 +35,17 @@ class TimekitApi
 
     private function makeRequest($url, $body)
     {
+        Log::debug('Calling ' . $url . ' with body:' . print_r($body, true));
         try {
             $response = $this->client->post($url, ['body' => $body])->json();
+            $code = 200;
         } catch (ClientException $exception) {
-            $response = $exception->getResponse()->json();
+            $response = $exception->getResponse()->getBody(true)->getContents();
+            $code = 500;
             //Log::error($response);
         }
 
-        return $response;
+        Log::debug(sprintf('[%s] Timekit returned: %s', $code, print_r($response, true)));
+        return ['response' => $response, 'code' => $code];
     }
 }

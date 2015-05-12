@@ -6,6 +6,7 @@ use App\Findtime\TimekitApi;
 use App\Findtime\WitLib;
 use App\Findtime\WitResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class FindtimeController extends Controller
 {
@@ -19,16 +20,16 @@ class FindtimeController extends Controller
 
         $timekit = new TimekitApi();
         $tkResponse = $timekit->findtime(
-            //$witResponse->getEmails(),
+        //$witResponse->getEmails(),
             ['timebirdcph@gmail.com'],
             $witResponse->getFuture(),
             $witResponse->getLength()
         );
 
-        return [
-            'timekit' => $tkResponse,
-            'wit' => $witResponse->__toArray()
-        ];
+        return new Response([
+            'timekit' => $tkResponse['response'],
+            'wit'     => $witResponse->__toArray()
+        ], $tkResponse['code']);
     }
 
 }
