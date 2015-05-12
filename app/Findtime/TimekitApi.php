@@ -35,7 +35,7 @@ class TimekitApi
 
     private function makeRequest($url, $body)
     {
-        Log::debug('Calling ' . $url . ' with body:' . print_r($body, true));
+        Log::debug('Calling ' . env('TIMEKIT_URL') . $url . ' with body:' . print_r($body, true));
         try {
             $response = $this->client->post($url, ['body' => $body])->json();
             $code = 200;
