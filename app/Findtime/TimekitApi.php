@@ -22,11 +22,28 @@ class TimekitApi
 
     public function findtime($emails, $future = '2 days', $length = '30 minutes')
     {
-        $json = json_encode([
+        /*$json = json_encode([
             'emails' => $emails,
             'future' => $future,
-            'length' => $length
-        ]);
+            'length' => $length,
+            'filters' => [
+                'after' => ['take_random' => ['number' => 5 ]]
+            ]
+        ]);*/
+        
+        $json = '{
+            "emails": [
+                "timebirdcph@gmail.com"
+            ],
+            "filters": {
+                "after": [
+                    { "take_random": {"number": 5} }
+                ]
+            },
+            "future": "1 months",
+            "length": "1 hour",
+            "sort": "asc"
+        }';
 
         $response = $this->makeRequest('findtime', $json);
 
